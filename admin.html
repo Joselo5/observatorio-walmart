@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel de Revisión - Observatorio Walmart México</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Panel de Revisión Interno</h1>
+      <nav>
+        <a href="index.html">Inicio</a>
+        <a href="formulario.html">Registrar denuncia</a>
+        <a href="denuncias.html">Casos publicados</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="pendientes">
+        <h2>Denuncias pendientes de revisión</h2>
+        <!-- Aquí se insertarán dinámicamente las denuncias -->
+      </section>
+
+      <section id="estadisticas">
+        <h2>Estadísticas internas</h2>
+        <ul id="stats"></ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2026 Observatorio de Denuncias Walmart México</p>
+    </footer>
+
+    <!-- 👇 Script al final del body -->
+    <script>
+      async function cargarPendientes() {
+        const respuesta = await fetch("http://localhost:3000/denuncias");
+        const denuncias = await respuesta.json();
+        const contenedor = document.getElementById("pendientes");
+
+        let total = denuncias.length;
+        let pendientes = 0,
+          aprobadas = 0,
+          rechazadas = 0;
+
+        denuncias.forEach((d) => {
+          if (d.estatus === "Pendiente") {
+            pendientes++;
+            const card = document.createElement("div");
+            card.className = "denuncia-card";
+            card.innerHTML = `
+              <h3>${d.titulo}</h3>
+              <p><strong>Producto:</strong> ${d.producto}</p>
+              <p><strong>Descripción:</strong> ${d.descripcion}</p>
+              <p><strong>Estatus:</strong> ${d.estatus}</p>
+              <button onclick="cambiarEstatus('${d.id}','Aprobada')">✅ Aprobar</button>
+              <button onclick="cambiarEstatus('${d.id}','Rechazada')">❌ Rechazar</button>
+              <button onclick="cambiarEstatus('${d.id}','Solicitar más información')">📩 Solicitar más información</button>
+            `;
+            contenedor.appendChild(card);
+          } else if (d.estatus === "Aprobada") {
+            aprobadas++;
+          } else if (d.estatus === "Rechazada") {
+            rechazadas++;
+          }
+        });
+
+        // Actualizar estadísticas
+        document.getElementById("stats").innerHTML = `
+          <li>Total de denuncias recibidas: ${total}</li>
+          <li>Pendientes de revisión: ${pendientes}</li>
+          <li>Aprobadas: ${aprobadas}</li>
+          <li>Rechazadas: ${rechazadas}</li>
+        `;
+      }
+
+      async function cambiarEstatus(id, nuevoEstatus) {
+        await fetch(`http://localhost:3000/denuncias/${id}/estatus`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ estatus: nuevoEstatus }),
+        });
+        alert(`Denuncia ${id} actualizada a: ${nuevoEstatus}`);
+        location.reload();
+      }
+
+      window.onload = cargarPendientes;
+    </script>
+  </body>
+</html>

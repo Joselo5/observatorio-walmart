@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar denuncia - Observatorio Walmart México</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Registrar nueva denuncia</h1>
+      <nav>
+        <a href="index.html">Inicio</a>
+        <a href="denuncias.html">Casos publicados</a>
+        <a href="admin.html">Panel de revisión</a>
+      </nav>
+    </header>
+
+    <main>
+      <form id="form-denuncia">
+        <label>Título del caso:</label>
+        <input type="text" name="titulo" required />
+
+        <label>Producto:</label>
+        <input type="text" name="producto" required />
+
+        <label>Descripción completa:</label>
+        <textarea name="descripcion" required></textarea>
+
+        <label>Evidencias (separadas por comas):</label>
+        <input type="text" name="evidencias" />
+
+        <label>Clasificación:</label>
+        <input type="text" name="clasificacion" required />
+
+        <button type="submit">Enviar denuncia</button>
+      </form>
+    </main>
+
+    <footer>
+      <p>&copy; 2026 Observatorio de Denuncias Walmart México</p>
+    </footer>
+
+    <script>
+      document
+        .getElementById("form-denuncia")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const form = e.target;
+          const nuevaDenuncia = {
+            titulo: form.titulo.value,
+            producto: form.producto.value,
+            descripcion: form.descripcion.value,
+            evidencias: form.evidencias.value
+              .split(",")
+              .map((e) => e.trim())
+              .filter((e) => e !== ""),
+            clasificacion: form.clasificacion.value,
+          };
+
+          const respuesta = await fetch("http://localhost:3000/denuncias", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(nuevaDenuncia),
+          });
+
+          const resultado = await respuesta.json();
+          alert(resultado.mensaje);
+
+          // Redirigir a la lista de denuncias
+          window.location.href = "denuncias.html";
+        });
+    </script>
+  </body>
+</html>
