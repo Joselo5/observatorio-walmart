@@ -2,63 +2,49 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Detalle del caso - Observatorio Walmart México</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <title>Detalle de denuncia</title>
   </head>
   <body>
-    <header>
-      <h1>Detalle del caso</h1>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="denuncias.html">Casos publicados</a>
-        <a href="formulario.html">Registrar denuncia</a>
-      </nav>
-    </header>
+    <h1>Detalle de denuncia</h1>
+    <div id="detalle"></div>
 
-    <main>
-      <article class="detalle-caso">
-        <!-- Aquí se insertará dinámicamente la denuncia -->
-      </article>
-    </main>
-
-    <footer>
-      <p>&copy; 2026 Observatorio de Denuncias Walmart México</p>
-    </footer>
-
-    <!-- 👇 Script al final del body -->
     <script>
       async function cargarDetalle() {
-        // Obtener el parámetro "id" de la URL
+        // Tomar el parámetro "id" de la URL
         const params = new URLSearchParams(window.location.search);
         const id = params.get("id");
 
-        // Cargar denuncias desde el servidor
-        const respuesta = await fetch("http://localhost:3000/denuncias");
-        const denuncias = await respuesta.json();
-
-        // Buscar la denuncia con ese id
-        const denuncia = denuncias.find((d) => d.id === id);
-        const contenedor = document.querySelector(".detalle-caso");
-
-        if (denuncia) {
-          contenedor.innerHTML = `
-            <h2>${denuncia.titulo}</h2>
-            <p><strong>Producto:</strong> ${denuncia.producto}</p>
-            <h3>Descripción completa</h3>
-            <p>${denuncia.descripcion}</p>
-            <h3>Evidencias</h3>
-            <ul>${denuncia.evidencias.map((e) => `<li>${e}</li>`).join("")}</ul>
-            <h3>Clasificación</h3>
-            <p>${denuncia.clasificacion}</p>
-            <h3>Estatus del caso</h3>
-            <p>${denuncia.estatus}</p>
-          `;
-        } else {
-          contenedor.innerHTML = "<p>Denuncia no encontrada.</p>";
+        if (!id) {
+          document.getElementById("detalle").innerText =
+            "No se especificó denuncia.";
+          return;
         }
+
+        // Obtener todas las denuncias del backend
+        const res = await fetch("/denuncias");
+        const denuncias = await res.json();
+
+        // Buscar la denuncia con ese ID
+        const denuncia = denuncias.find((d) => d.id === id);
+
+        if (!denuncia) {
+          document.getElementById("detalle").innerText =
+            "Denuncia no encontrada.";
+          return;
+        }
+
+        // Mostrar la información completa
+        document.getElementById("detalle").innerHTML = `
+        <p><strong>ID:</strong> ${denuncia.id}</p>
+        <p><strong>Título:</strong> ${denuncia.titulo}</p>
+        <p><strong>Producto:</strong> ${denuncia.producto}</p>
+        <p><strong>Descripción:</strong> ${denuncia.descripcion}</p>
+        <p><strong>Clasificación:</strong> ${denuncia.clasificacion}</p>
+        <p><strong>Estatus:</strong> ${denuncia.estatus}</p>
+      `;
       }
 
-      window.onload = cargarDetalle;
+      cargarDetalle();
     </script>
   </body>
 </html>
