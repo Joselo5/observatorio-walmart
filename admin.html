@@ -2,89 +2,73 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Panel de Revisión - Observatorio Walmart México</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <title>Panel de administración</title>
   </head>
   <body>
-    <header>
-      <h1>Panel de Revisión Interno</h1>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="formulario.html">Registrar denuncia</a>
-        <a href="denuncias.html">Casos publicados</a>
-      </nav>
-    </header>
+    <h1>Panel de administración</h1>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Título</th>
+          <th>Producto</th>
+          <th>Clasificación</th>
+          <th>Estatus</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-admin"></tbody>
+    </table>
 
-    <main>
-      <section id="pendientes">
-        <h2>Denuncias pendientes de revisión</h2>
-        <!-- Aquí se insertarán dinámicamente las denuncias -->
-      </section>
-
-      <section id="estadisticas">
-        <h2>Estadísticas internas</h2>
-        <ul id="stats"></ul>
-      </section>
-    </main>
-
-    <footer>
-      <p>&copy; 2026 Observatorio de Denuncias Walmart México</p>
-    </footer>
-
-    <!-- 👇 Script al final del body -->
     <script>
-      async function cargarPendientes() {
-        const respuesta = await fetch("http://localhost:3000/denuncias");
-        const denuncias = await respuesta.json();
-        const contenedor = document.getElementById("pendientes");
+      async function cargarDenuncias() {
+        const res = await fetch("/denuncias");
+        const denuncias = await res.json();
 
-        let total = denuncias.length;
-        let pendientes = 0,
-          aprobadas = 0,
-          rechazadas = 0;
+        const tbody = document.getElementById("tabla-admin");
+        tbody.innerHTML = "";
 
         denuncias.forEach((d) => {
-          if (d.estatus === "Pendiente") {
-            pendientes++;
-            const card = document.createElement("div");
-            card.className = "denuncia-card";
-            card.innerHTML = `
-              <h3>${d.titulo}</h3>
-              <p><strong>Producto:</strong> ${d.producto}</p>
-              <p><strong>Descripción:</strong> ${d.descripcion}</p>
-              <p><strong>Estatus:</strong> ${d.estatus}</p>
-              <button onclick="cambiarEstatus('${d.id}','Aprobada')">✅ Aprobar</button>
-              <button onclick="cambiarEstatus('${d.id}','Rechazada')">❌ Rechazar</button>
-              <button onclick="cambiarEstatus('${d.id}','Solicitar más información')">📩 Solicitar más información</button>
-            `;
-            contenedor.appendChild(card);
-          } else if (d.estatus === "Aprobada") {
-            aprobadas++;
-          } else if (d.estatus === "Rechazada") {
-            rechazadas++;
-          }
-        });
-
-        // Actualizar estadísticas
-        document.getElementById("stats").innerHTML = `
-          <li>Total de denuncias recibidas: ${total}</li>
-          <li>Pendientes de revisión: ${pendientes}</li>
-          <li>Aprobadas: ${aprobadas}</li>
-          <li>Rechazadas: ${rechazadas}</li>
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+          <td>${d.id}</td>
+          <td>${d.titulo}</td>
+          <td>${d.producto}</td>
+          <td>${d.clasificacion}</td>
+          <td>${d.estatus}</td>
+          <td>
+            <button onclick="cambiarEstatus('${d.id}', 'Resuelta')">Marcar como Resuelta</button>
+            <button onclick="cambiarEstatus('${d.id}', 'Pendiente')">Marcar como Pendiente</button>
+          </td>
         `;
+          tbody.appendChild(fila);
+        });
       }
 
       async function cambiarEstatus(id, nuevoEstatus) {
-        await fetch(`http://localhost:3000/denuncias/${id}/estatus`, {
+        // Obtener todas las denuncias
+        const res = await fetch("/denuncias");
+        const denuncias = await res.json();
+
+        // Buscar la denuncia por ID
+        const denuncia = denuncias.find((d) => d.id === id);
+        if (!denuncia) return;
+
+        // Actualizar el estatus en memoria
+        denuncia.estatus = nuevoEstatus;
+
+        // Enviar actualización al backend (simulación: POST de reemplazo)
+        await fetch("/denuncias", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ estatus: nuevoEstatus }),
+          body: JSON.stringify(denuncia),
         });
-        alert(`Denuncia ${id} actualizada a: ${nuevoEstatus}`);
-        location.reload();
+
+        // Recargar tabla
+        cargarDenuncias();
       }
 
-      window.onload = cargarPendientes;
+      cargarDenuncias();
     </script>
   </body>
 </html>
