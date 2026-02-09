@@ -2,59 +2,47 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Casos publicados - Observatorio Walmart México</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <title>Denuncias registradas</title>
   </head>
   <body>
-    <header>
-      <h1>Casos publicados</h1>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="formulario.html">Registrar denuncia</a>
-        <a href="recursos.html">Recursos</a>
-      </nav>
-    </header>
+    <h1>Listado de denuncias</h1>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Título</th>
+          <th>Producto</th>
+          <th>Descripción</th>
+          <th>Clasificación</th>
+          <th>Estatus</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-denuncias"></tbody>
+    </table>
 
-    <main>
-      <section id="lista-denuncias">
-        <h2>Denuncias aprobadas</h2>
-        <!-- 👇 Aquí se insertarán las denuncias dinámicamente -->
-      </section>
-    </main>
-
-    <footer>
-      <p>&copy; 2026 Observatorio de Denuncias Walmart México</p>
-    </footer>
-
-    <!-- 👇 Script al final del body -->
     <script>
       async function cargarDenuncias() {
-        const respuesta = await fetch("http://localhost:3000/denuncias");
-        const denuncias = await respuesta.json();
-        const contenedor = document.getElementById("lista-denuncias");
+        const res = await fetch("/denuncias");
+        const denuncias = await res.json();
+
+        const tbody = document.getElementById("tabla-denuncias");
+        tbody.innerHTML = "";
 
         denuncias.forEach((d) => {
-          if (
-            d.estatus.includes("Aprobada") ||
-            d.estatus.includes("En revisión")
-          ) {
-            const card = document.createElement("div");
-            card.className = "denuncia-card";
-            card.innerHTML = `
-              <h3>${d.titulo}</h3>
-              <p><strong>Producto:</strong> ${d.producto}</p>
-              <p><strong>Descripción breve:</strong> ${d.descripcion}</p>
-              <p><strong>Evidencias:</strong> ${d.evidencias.join(", ")}</p>
-              <p><strong>Clasificación:</strong> ${d.clasificacion}</p>
-              <p><strong>Estatus:</strong> ${d.estatus}</p>
-              <a href="detalle.html?id=${d.id}" class="boton">Ver detalles completos</a>
-            `;
-            contenedor.appendChild(card);
-          }
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+          <td>${d.id}</td>
+          <td>${d.titulo}</td>
+          <td>${d.producto}</td>
+          <td>${d.descripcion}</td>
+          <td>${d.clasificacion}</td>
+          <td>${d.estatus}</td>
+        `;
+          tbody.appendChild(fila);
         });
       }
 
-      window.onload = cargarDenuncias;
+      cargarDenuncias();
     </script>
   </body>
 </html>
