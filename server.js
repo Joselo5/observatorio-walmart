@@ -3,9 +3,7 @@ const path = require("path");
 const app = express();
 
 app.use(express.json());
-
-// Servir archivos estáticos (tus HTML, CSS y JS que están en la raíz)
-app.use(express.static(__dirname));
+app.use(express.static(__dirname)); // sirve tus HTML, CSS y JS
 
 let denuncias = [];
 
